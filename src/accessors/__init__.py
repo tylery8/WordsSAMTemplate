@@ -1,0 +1,1 @@
+from .random_word_accessor import RandomWordAccessor

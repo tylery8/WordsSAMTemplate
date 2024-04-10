@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 5
+
+Resources:
+  WordsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Words
+      PrimaryKey:
+        Name: id
+        Type: String
+
+  CreateWordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src
+      Handler: handlers.words_handler.create_word_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Events:
+        CreateWord:
+          Type: Api
+          Properties:
+            Path: /words
+            Method: post
+      Environment:
+        Variables:
+          WORDS_TABLE_NAME: !Ref WordsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
+
+  GetWordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src
+      Handler: handlers.words_handler.get_word_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Events:
+        GetWord:
+          Type: Api
+          Properties:
+            Path: /words/{id}
+            Method: get
+      Environment:
+        Variables:
+          WORDS_TABLE_NAME: !Ref WordsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref WordsTable
+
+  DeleteWordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src
+      Handler: handlers.words_handler.delete_word_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Events:
+        DeleteWord:
+          Type: Api
+          Properties:
+            Path: /words/{id}
+            Method: delete
+      Environment:
+        Variables:
+          WORDS_TABLE_NAME: !Ref WordsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WordsTable
